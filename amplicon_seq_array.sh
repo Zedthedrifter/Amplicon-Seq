@@ -17,7 +17,7 @@ INDIR=$HOME/scratch/$work_dir/results/amp2-dorado-demultiplex
 OUTDIR=$HOME/scratch/$work_dir/results/amp3-samtools-fastq
 SLURM_ARRAY_TASK_ID=$(printf "%02d" "$SLURM_ARRAY_TASK_ID")
 
-samtools fastq -@ $SLURM_CPUS_PER_TASK -0 /dev/null $INDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.bam > $OUTDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.fastq
+samtools fastq -@ $SLURM_CPUS_PER_TASK $INDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.bam > $OUTDIR/samtools_${SLURM_ARRAY_TASK_ID}.fastq
 
 echo 'samtools_fastq Job completed'
 }
@@ -28,7 +28,6 @@ function NanoPlot_QC {
 work_dir=$1
 minlen=$2
 maxlen=$3
-FILE_PREFIX=$4
 
 INDIR=$HOME/scratch/$work_dir/results/amp3-samtools-fastq
 OUTDIR=$HOME/scratch/$work_dir/results/amp4-nanoplot
@@ -36,7 +35,7 @@ SLURM_ARRAY_TASK_ID=$(printf "%02d" "$SLURM_ARRAY_TASK_ID")
 
 echo 'running NanoPlot QC' $OUTDIR $minlen $maxlen
 
-NanoPlot -t 2 --fastq $INDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.fastq \
+NanoPlot -t 2 --fastq $INDIR/samtools_${SLURM_ARRAY_TASK_ID}.fastq \
   --outdir $OUTDIR/NanoPlot_bc${SLURM_ARRAY_TASK_ID}  \
   --minlength $minlen --maxlength $maxlen --plots dot --legacy hex
 
@@ -48,14 +47,14 @@ echo 'NanoPlot QC Job completed'
 function Porechop_trim {
 
 work_dir=$1
-FILE_PREFIX=$2
 
 INDIR=$HOME/scratch/$work_dir/results/amp3-samtools-fastq
 OUTDIR=$HOME/scratch/$work_dir/results/amp5-porechop
+
 SLURM_ARRAY_TASK_ID=$(printf "%02d" "$SLURM_ARRAY_TASK_ID")
 echo 'running Porechop to trim barcode and adaptor'
 
-porechop -t 4 --extra_end_trim 0 -i $INDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.fastq -o $OUTDIR/porechop.bc${SLURM_ARRAY_TASK_ID}.fastq
+porechop -t 4 --extra_end_trim 0 -i $INDIR/samtools_${SLURM_ARRAY_TASK_ID}.fastq -o $OUTDIR/porechop.bc${SLURM_ARRAY_TASK_ID}.fastq
 
 echo 'Porechop_trim Job completed'
 
@@ -115,9 +114,9 @@ samtools_fastq $WORKDIR ${FILE_PREFIX}
 #NanoPlot_QC
 min_len=$4
 max_len=$5
-NanoPlot_QC $WORKDIR $min_len $max_len ${FILE_PREFIX}
+NanoPlot_QC $WORKDIR $min_len $max_len 
 #Porechop
-Porechop_trim $WORKDIR ${FILE_PREFIX}
+Porechop_trim $WORKDIR
 #Chopper
 Chopper_QT $WORKDIR
 #ampliconsorter
