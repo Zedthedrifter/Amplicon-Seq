@@ -12,11 +12,12 @@ function samtools_fastq { #for faster processing, use the array version to submi
 
 echo 'running samtools for ${work_dir}'
 work_dir=$1
+FILE_PREFIX=$2
 INDIR=$HOME/scratch/$work_dir/results/amp2-dorado-demultiplex
 OUTDIR=$HOME/scratch/$work_dir/results/amp3-samtools-fastq
 SLURM_ARRAY_TASK_ID=$(printf "%02d" "$SLURM_ARRAY_TASK_ID")
 
-samtools fastq -@ $SLURM_CPUS_PER_TASK -0 /dev/null $INDIR/SQK-NBD114-96_barcode${SLURM_ARRAY_TASK_ID}.bam > $OUTDIR/SQK-NBD114-96_barcode${SLURM_ARRAY_TASK_ID}.fastq
+samtools fastq -@ $SLURM_CPUS_PER_TASK -0 /dev/null $INDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.bam > $OUTDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.fastq
 
 echo 'samtools_fastq Job completed'
 }
@@ -27,6 +28,7 @@ function NanoPlot_QC {
 work_dir=$1
 minlen=$2
 maxlen=$3
+FILE_PREFIX=$4
 
 INDIR=$HOME/scratch/$work_dir/results/amp3-samtools-fastq
 OUTDIR=$HOME/scratch/$work_dir/results/amp4-nanoplot
@@ -34,7 +36,7 @@ SLURM_ARRAY_TASK_ID=$(printf "%02d" "$SLURM_ARRAY_TASK_ID")
 
 echo 'running NanoPlot QC' $OUTDIR $minlen $maxlen
 
-NanoPlot -t 2 --fastq $INDIR/SQK-NBD114-96_barcode${SLURM_ARRAY_TASK_ID}.fastq \
+NanoPlot -t 2 --fastq $INDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.fastq \
   --outdir $OUTDIR/NanoPlot_bc${SLURM_ARRAY_TASK_ID}  \
   --minlength $minlen --maxlength $maxlen --plots dot --legacy hex
 
@@ -46,12 +48,14 @@ echo 'NanoPlot QC Job completed'
 function Porechop_trim {
 
 work_dir=$1
+FILE_PREFIX=$2
+
 INDIR=$HOME/scratch/$work_dir/results/amp3-samtools-fastq
 OUTDIR=$HOME/scratch/$work_dir/results/amp5-porechop
 SLURM_ARRAY_TASK_ID=$(printf "%02d" "$SLURM_ARRAY_TASK_ID")
 echo 'running Porechop to trim barcode and adaptor'
 
-porechop -t 4 --extra_end_trim 0 -i $INDIR/SQK-NBD114-96_barcode${SLURM_ARRAY_TASK_ID}.fastq -o $OUTDIR/porechop.bc${SLURM_ARRAY_TASK_ID}.fastq
+porechop -t 4 --extra_end_trim 0 -i $INDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.fastq -o $OUTDIR/porechop.bc${SLURM_ARRAY_TASK_ID}.fastq
 
 echo 'Porechop_trim Job completed'
 
@@ -61,6 +65,7 @@ echo 'Porechop_trim Job completed'
 function Chopper_QT { 
 
 work_dir=$1
+
 INDIR=$HOME/scratch/$work_dir/results/amp5-porechop
 OUTDIR=$HOME/scratch/$work_dir/results/amp6-chopper
 SLURM_ARRAY_TASK_ID=$(printf "%02d" "$SLURM_ARRAY_TASK_ID")
@@ -76,6 +81,8 @@ echo 'Chopper Job completed'
 function ampliconsorter {
 
 work_dir=$1
+
+
 INDIR=$HOME/scratch/$work_dir/results/amp6-chopper
 OUTDIR=$HOME/scratch/$work_dir/results/amp7-ampliconsorter
 AMPLICON_SORTER_PATH=$HOME/scratch/apps/amplicon_sorter
@@ -104,13 +111,13 @@ WORKDIR=$3 #on scratch
 
 #---------------------------------------
 #samtools 
-samtools_fastq $WORKDIR
+samtools_fastq $WORKDIR ${FILE_PREFIX}
 #NanoPlot_QC
 min_len=$4
 max_len=$5
-NanoPlot_QC $WORKDIR $min_len $max_len
+NanoPlot_QC $WORKDIR $min_len $max_len ${FILE_PREFIX}
 #Porechop
-Porechop_trim $WORKDIR
+Porechop_trim $WORKDIR ${FILE_PREFIX}
 #Chopper
 Chopper_QT $WORKDIR
 #ampliconsorter
@@ -128,9 +135,11 @@ MODEL=$HOME/scratch/apps/dorado-0.4.1-linux-x64/model/dna_r10.4.1_e8.2_400bps_ha
 USER=zedchen
 ENV=minion
 WORKDIR=zed_chen/amplicon_seq
+FILE_PREFIX=SQK-NBD114-96_barcode
 min_len=200
 max_len=10000
 SLURM_CPUS_PER_TASK=8
+
 
 main $USER $ENV $WORKDIR $min_len $max_len #CHANGE BOTH TO YOUR ACTUAL USER NAME, ENV NAME, AND WORK DIRECTORY ON SCRATCH
 

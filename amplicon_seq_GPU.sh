@@ -6,34 +6,12 @@
 #SBATCH --mem=32G #CHANGE TO THE AMOUNT OF MEM YOU NEED
 
 
-#Create working directory under scratch
-function make_work_dir {
-#in your scratch directory, make your project directory
-#this function should be run one and only once
-work_dir=$1
-
-#organize directories
-mkdir $HOME/scratch/$work_dir/data
-#Create a folder for scripts
-mkdir $HOME/scratch/$work_dir/scripts
-#Create a folder for $subdir
-mkdir $HOME/scratch/$work_dir/results
-#Create folders under result folder for each program
-mkdir $HOME/scratch/$work_dir/results/amp1-dorado-basecalling
-mkdir $HOME/scratch/$work_dir/results/amp2-dorado-demultiplex
-mkdir $HOME/scratch/$work_dir/results/amp3-samtools-fastq
-mkdir $HOME/scratch/$work_dir/results/amp4-nanoplot
-mkdir $HOME/scratch/$work_dir/results/amp5-porechop
-mkdir $HOME/scratch/$work_dir/results/amp6-chopper
-mkdir $HOME/scratch/$work_dir/results/amp7-ampliconsorter
-}
-
 function basecalling {
 
 
 work_dir=$1
 batchsize=$2
-pod5s=$HOME/scratch/$work_dir/data/pod5 #input pod5 data directory: pods
+pod5s=$HOME/scratch/$work_dir/data/pod5 #input pod5 data directory: pod5
 #
 ourdir=$HOME/scratch/$work_dir/results/amp1-dorado-basecalling
 
@@ -73,8 +51,6 @@ USER=$1 #
 env_name=$2 #same as your previous input
 WORKDIR=$3 #on scratch
 
-#MAKE DIRECTORY
-#make_work_dir $WORKDIR #only run once
 #base_calling
 BATCH_SIZE=$4
 basecalling $WORKDIR $BATCH_SIZE
