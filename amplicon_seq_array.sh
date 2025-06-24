@@ -2,14 +2,13 @@
 #SBATCH --job-name="amplicon_seq_${1}"
 #SBATCH --export=ALL
 #SBATCH --cpus-per-task=8
-#SBATCH --array=1-93 #change it to the number of array in amp2 directory. when I'm testing, I got SQK-NBD114-96_barcode01.bam to SQK-NBD114-96_barcode93.bam. formatted as 01,02,etc. if you have over 100 samples, need to reformat for that.
+#SBATCH --array=1-95 #change it to the number of array in amp2 directory. when I'm testing, I got SQK-NBD114-96_barcode01.bam to SQK-NBD114-96_barcode93.bam. formatted as 01,02,etc. if you have over 100 samples, need to reformat for that.
 #SBATCH --mem=32G #change it to the amount of memory you need
 #SBATCH --chdir=$HOME/scratch/$WORKDIR #not really necessary
 
 
 #parallel
-function samtools_fastq { #for faster processing, use the array version to submit sbatch. otherwise, just a for loop
-
+function samtools_fastq {
 echo 'running samtools for ${work_dir}'
 work_dir=$1
 FILE_PREFIX=$2
@@ -17,6 +16,7 @@ INDIR=$HOME/scratch/$work_dir/results/amp2-dorado-demultiplex
 OUTDIR=$HOME/scratch/$work_dir/results/amp3-samtools-fastq
 SLURM_ARRAY_TASK_ID=$(printf "%02d" "$SLURM_ARRAY_TASK_ID")
 
+#get all the rests, regardless of pairing etc.
 samtools fastq -@ $SLURM_CPUS_PER_TASK $INDIR/${FILE_PREFIX}${SLURM_ARRAY_TASK_ID}.bam > $OUTDIR/samtools_${SLURM_ARRAY_TASK_ID}.fastq
 
 echo 'samtools_fastq Job completed'
@@ -130,10 +130,11 @@ export PATH=$PATH:$HOME/scratch/apps/dorado-0.4.1-linux-x64
 export LD_LIBRARY_PATH=$HOME/scratch/apps/dorado-0.4.1-linux-x64/lib:$LD_LIBRARY_PATH
 MODEL=$HOME/scratch/apps/dorado-0.4.1-linux-x64/model/dna_r10.4.1_e8.2_400bps_hac\@v4.2.0/
 
+#---------------------------------------------------------------------------------------------------------------------------------
 #USER INPUTS (CAN ALSO MAKE IT INTERACTIVE, LIKE INPUT FROM TERMINAL INSTEAD OF IN THE SCRIPT, IF YOU PREFER)
 USER=zedchen
 ENV=minion
-WORKDIR=zed_chen/amplicon_seq
+WORKDIR=zed_chen/amp_test
 FILE_PREFIX=SQK-NBD114-96_barcode
 min_len=200
 max_len=10000

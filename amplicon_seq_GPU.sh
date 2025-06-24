@@ -68,7 +68,7 @@ MODEL=$HOME/scratch/apps/dorado-0.4.1-linux-x64/model/dna_r10.4.1_e8.2_400bps_ha
 #USER INPUTS (CAN ALSO MAKE IT INTERACTIVE, LIKE INPUT FROM TERMINAL INSTEAD OF IN THE SCRIPT, IF YOU PREFER)
 USER=zedchen #must change
 ENV=minion #might change
-WORKDIR=zed_chen/amplicon_seq #must change
+WORKDIR=zed_chen/amp_test #must change
 BATCH_SIZE=64 #batch size for cuda
 
 

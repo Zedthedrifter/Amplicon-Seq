@@ -1,16 +1,41 @@
 USEAGE:
 
-This repository contains three scripts for AMPLICON SEQ processing: set_up_evn.sh, amplicon_seq_GPU.sh, amplicon_seq_array.sh
+This repository contains three scripts for AMPLICON SEQ processing: set_up_evn1.sh, set_up_evn2.sh,amplicon_seq_GPU.sh, amplicon_seq_array.sh
+
+#Basic Workflow: Amp-seq in four clicks
+
+MODIFY variables in the four scripts (you can add variables directly to set_up_evn1.sh, set_up_evn2.sh on command line, or place them in the scripts as well)
+#FOR VARIABLE MODIFICATION, SEE THE DETAILED EXPLANATION BELOW
+
+srun --partition=short --cpus-per-task=8 --mem=16G --pty bash #or more memory if you want
+
+./set_up_evn1.sh, 
+
+activate environment: conda activate $ENV_NAME #this is a manual step!
+
+./set_up_evn2.sh
+
+sbatch amplicon_seq_GPU.sh
+
+#CHECK amp2 OUTPUT TO MODIFY THE ARRAY
+
+sbatch amplicon_seq_array.sh
+
+#detailed explanation
 
 #Set up env
 
-To set up your environment for amplicon seq analysis, run set_up_evn.sh $ENV_NAME $USER $WORKDIR
+To set up your environment for amplicon seq analysis, run ./set_up_evn1.sh $ENV_NAME $USER $WORKDIR
 The script expects THREE input variables. Please supply 
           the name of your environment, 
           your rbge user name for setting up directories, AND 
           the subdirectory on scratch where the project will be carried out
 
+you might want to use srun here to get more memory. otherwise it might crash...
+now ACTIVATE YOUR ENVIRONMENT: conda activate $ENV_NAME
 
+
+To finish setting up env, run ./set_up_evn2.sh $ENV_NAME $USER $WORKDIR
 
 after setting up the environment, it also generates a series of directories within your work subdirectory:
 
