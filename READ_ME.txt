@@ -7,11 +7,13 @@ This repository contains three scripts for AMPLICON SEQ processing: set_up_evn1.
 MODIFY variables in the four scripts (you can add variables directly to set_up_evn1.sh, set_up_evn2.sh on command line, or place them in the scripts as well)
 #FOR VARIABLE MODIFICATION, SEE THE DETAILED EXPLANATION BELOW
 
+
+./set_up_evn1.sh
+
 srun --partition=short --cpus-per-task=8 --mem=16G --pty bash #or more memory if you want
 
-./set_up_evn1.sh, 
-
 activate environment: conda activate $ENV_NAME #this is a manual step!
+
 
 ./set_up_evn2.sh
 
